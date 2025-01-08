@@ -1,0 +1,17 @@
+services:
+  floopy-bird:
+    image: 10.4.0.19:8085/goofy-main:session-cluster-local-db
+    #build: ./python-floopybird/
+    ports:
+      - "12346:3000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/
+    depends_on:
+      - mongodb
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+
+networks:
+  default:
