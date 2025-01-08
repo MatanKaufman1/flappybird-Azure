@@ -1,0 +1,30 @@
+*
+!*/
+.venv
+node_modules
+.terraform
+venv
+src/flask_session/
+
+# but these file type
+!*.py
+!*.md
+!*.sh
+!*.html
+
+# and these files too
+!.gitignore
+!Dockerfile
+!nginx.conf
+!*.yaml
+!*.yml
+!*.tf
+!*.txt
+!*.json
+!screenshot.png
+!*.tsx
+!*.js
+!*.ts
+!*.css
+!*.mp3
+!*.png
