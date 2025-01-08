@@ -41,13 +41,11 @@ data "azurerm_key_vault" "flappykey" {
   resource_group_name = data.azurerm_resource_group.aks_rg.name
 }
 
-# Fetch the SQL admin login from Key Vault
 data "azurerm_key_vault_secret" "sql_admin_login" {
   name         = "AZURE-SQL-USERNAME"
   key_vault_id = data.azurerm_key_vault.flappykey.id
 }
 
-# Fetch the SQL admin password from Key Vault
 data "azurerm_key_vault_secret" "sql_admin_password" {
   name         = "MSQL-PASSWORD" # Secret name in Key Vault
   key_vault_id = data.azurerm_key_vault.flappykey.id
@@ -62,10 +60,6 @@ resource "azurerm_mssql_server" "sql-server" {
   administrator_login_password = data.azurerm_key_vault_secret.sql_admin_password.value
 }
 
-#data "azurerm_mssql_database" "flappy-db" {
-#  name      = "flappy-db"
-#  server_id = azurerm_mssql_server.sql-server.id
-#}
 
 resource "azurerm_mssql_database" "sql-server" {
   name           = "flappy-db"
