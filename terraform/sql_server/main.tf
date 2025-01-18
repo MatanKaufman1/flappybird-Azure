@@ -5,18 +5,30 @@ data "azurerm_key_vault" "kv" {
 
 # Fetch the SQL admin login from Key Vault
 data "azurerm_key_vault_secret" "sql_admin_login" {
-  name         = "SQL-Admin-Login"
+  name         = "AZURE-SQL-USERNAME"
   key_vault_id = data.azurerm_key_vault.kv.id
 }
 
 # Fetch the SQL admin password from Key Vault
 data "azurerm_key_vault_secret" "sql_admin_password" {
-  name         = "SQL-Admin-Password"
+  name         = "AZURE-SQL-PASSWORD"
+  key_vault_id = data.azurerm_key_vault.kv.id
+}
+
+# Fetch the SQL server name from Key Vault
+data "azurerm_key_vault_secret" "sql_server_name" {
+  name         = "AZURE-SQL-SERVER"
+  key_vault_id = data.azurerm_key_vault.kv.id
+}
+
+# Fetch the SQL database name from Key Vault
+data "azurerm_key_vault_secret" "sql_database_name" {
+  name         = "AZURE-SQL-DATABASE"
   key_vault_id = data.azurerm_key_vault.kv.id
 }
 
 resource "azurerm_mssql_server" "sql_server" {
-  name                         = var.sql_server_name
+  name                         = data.azurerm_key_vault_secret.sql_server_name.value
   resource_group_name          = var.resource_group_name
   location                     = var.location
   version                      = "12.0"
@@ -25,7 +37,7 @@ resource "azurerm_mssql_server" "sql_server" {
 }
 
 resource "azurerm_mssql_database" "sql_database" {
-  name           = var.sql_database_name
+  name           = data.azurerm_key_vault_secret.sql_database_name.value
   server_id      = azurerm_mssql_server.sql_server.id
   max_size_gb    = 2
   sku_name       = "S0"

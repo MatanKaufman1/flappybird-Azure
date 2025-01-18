@@ -24,16 +24,6 @@ variable "node_count" {
   default     = 1
 }
 
-variable "sql_server_name" {
-  description = "this is sql-server name"
-  type        = string
-}
-
-variable "sql_database_name" {
-  description = "this is the database name"
-  type        = string
-}
-
 
 variable "key_vault_name" {
   description = "this is azure_key_vault"

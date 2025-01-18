@@ -1,9 +1,11 @@
-terraform init t
+terraform init 
 terraform apply -target=module.keyvault
 
 
-az keyvault secret set --vault-name "hdo3keyvault" --name "SQL-Admin-Login" --value "adminuser"
-az keyvault secret set --vault-name "hdo3keyvault" --name "SQL-Admin-Password" --value "your-secure-password"
+az keyvault secret set --vault-name "hdo3keyvault12" --name "AZURE-SQL-USERNAME" --value "adminuser"
+az keyvault secret set --vault-name "hdo3keyvault12" --name "AZURE-SQL-PASSWORD" --value "your-secure-password"
 
+az keyvault secret set --vault-name "hdo3keyvault12" --name "AZURE-SQL-SERVER" --value "azmysql"
+az keyvault secret set --vault-name "hdo3keyvault12" --name "AZURE-SQL-DATABASE" --value "azmydb"
 
 terraform apply

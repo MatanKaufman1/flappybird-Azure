@@ -32,8 +32,6 @@ module "sql_server" {
   resource_group_name = var.resource_group_name
   location            = var.location
   key_vault_name      = module.keyvault.key_vault_name
-  sql_server_name     = var.sql_server_name
-  sql_database_name   = var.sql_database_name
 }
 
 module "application_gateway" {
