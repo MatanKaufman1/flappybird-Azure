@@ -1,27 +1,3 @@
-"""
-Flask web application for user authentication and score tracking.
-
-This application provides endpoints for user registration, authentication,
-score submission, and leaderboard functionality. It uses Azure SQL Database
-for data persistence and implements session-based authentication.
-
-Module dependencies:
-    flask: Web framework for handling HTTP requests and responses
-    dotenv: Environment variable management
-    flask_cors: Handle Cross-Origin Resource Sharing
-    pyodbc: Database connectivity for Azure SQL
-    logging: Application logging functionality
-    logging_loki: Grafana Loki logging integration
-    os: Operating system interface for environment variables
-    sys: System-specific parameters and functions
-
-Environment Variables Required:
-    AZURE_SQL_SERVER: Azure SQL Server hostname
-    AZURE_SQL_DATABASE: Database name
-    AZURE_SQL_USERNAME: Database username
-    AZURE_SQL_PASSWORD: Database password
-
-"""
 from flask import (
     Flask,
     request,
@@ -37,10 +13,13 @@ import pyodbc
 import logging
 from logging_loki import LokiHandler
 import os
+from azure.keyvault.secrets import SecretClient
+from azure.identity import DefaultAzureCredential
 import sys
 
 app = Flask(__name__, static_url_path="")
 
+load_dotenv()  
 
 LOGIN_HTML = "login.html"
 INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error"
@@ -50,31 +29,38 @@ app.config["SECRET_KEY"] = "your-secret-key"
 #Session(app)
 CORS(app)
 
-load_dotenv('azure-login.env')
-AZURE_SQL_SERVER = os.getenv("AZURE_SQL_SERVER")
-AZURE_SQL_DATABASE = os.getenv("AZURE_SQL_DATABASE")
-AZURE_SQL_USERNAME = os.getenv("AZURE_SQL_USERNAME")
-AZURE_SQL_PASSWORD = os.getenv("AZURE_SQL_PASSWORD")
+keyVaultName = os.getenv("KEY_VAULT_NAME")
+
+KVUri = f"https://{keyVaultName}.vault.azure.net"
+
+# Authenticate and create a client for Key Vault
+credential = DefaultAzureCredential()
+secret_client = SecretClient(vault_url=KVUri, credential=credential)
+
+
+def get_secret(secret_name):
+    secret = secret_client.get_secret(secret_name)
+    return secret.value
+
+
+AZURE_SQL_SERVER = get_secret("AZURE-SQL-SERVER")
+AZURE_SQL_DATABASE = get_secret("AZURE-SQL-DATABASE")
+AZURE_SQL_USERNAME = get_secret("AZURE-SQL-USERNAME")
+AZURE_SQL_PASSWORD = get_secret("AZURE-SQL-PASSWORD")
 
 connection_string = (
     f"DRIVER={{ODBC Driver 18 for SQL Server}};"
-    f"SERVER={AZURE_SQL_SERVER};"
+    f"SERVER=tcp:{AZURE_SQL_SERVER}.database.windows.net,1433;"
     f"DATABASE={AZURE_SQL_DATABASE};"
     f"UID={AZURE_SQL_USERNAME};"
-    f"PWD={AZURE_SQL_PASSWORD}"
+    f"PWD={AZURE_SQL_PASSWORD};"
+    f"TrustServerCertificate=yes;Connection Timeout=30;"
 )
 conn = pyodbc.connect(connection_string)
 cursor = conn.cursor()
 
-def initialize_database():
-    """
-    Initialize the database by creating necessary tables if they don't exist.
-    
-    Creates two tables:
-    - users: Stores user authentication information
-    - scores: Stores user game scores
-    """
 
+def initialize_database():
     cursor.execute("""
     IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='users' AND xtype='U')
     CREATE TABLE users (
@@ -98,13 +84,6 @@ initialize_database()
 
 @app.route("/")
 def serve_index():
-      """
-    Serve the main index page if user is authenticated, otherwise redirect to login.
-
-    Returns:
-        Response: Either the index page or a redirect to the login page
-    """
-
     if "username" not in session:
         return redirect(url_for("login"))
     return send_from_directory("static", "index.html")
@@ -112,20 +91,6 @@ def serve_index():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    """
-    Handle user registration.
-
-    POST Parameters:
-        username (str): The desired username (alphabetic characters only)
-        password (str): The user's password
-
-    Returns:
-        Response: JSON response indicating success or failure
-        - 200: Registration successful
-        - 400: Invalid username
-        - 500: Internal server error
-    """
-
     if request.method == "POST":
         try:
             data = request.json
@@ -155,20 +120,6 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """
-    Handle user authentication.
-
-    POST Parameters:
-        username (str): The user's username
-        password (str): The user's password
-
-    Returns:
-        Response: JSON response indicating success or failure
-        - 200: Login successful with redirect URL
-        - 400: Invalid credentials
-        - 500: Internal server error
-    """
-
     if request.method == "POST":
         try:
             data = request.json
@@ -198,14 +149,6 @@ def login():
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    """
-    Handle user logout by clearing the session.
-
-    Returns:
-        Response: Redirect to login page or error response
-        - 200: Successful logout
-        - 500: Internal server error
-    """
     try:
         session.clear()
         return send_from_directory("static", LOGIN_HTML)
@@ -216,21 +159,6 @@ def logout():
 
 @app.route("/submit-score", methods=["POST"])
 def submit_score():
-    """
-    Submit a new score for the authenticated user.
-
-    The score is only updated if it's higher than the user's existing score.
-
-    POST Parameters:
-        score (float): The score to submit
-
-    Returns:
-        Response: JSON response indicating success or failure
-        - 200: Score submitted successfully
-        - 400: Invalid score data
-        - 401: User not authenticated
-        - 500: Internal server error
-    """
     if "username" not in session:
         return jsonify({"error": "Unauthorized"}), 401
     try:
@@ -268,14 +196,6 @@ def submit_score():
 
 @app.route("/leaderboard", methods=["GET"])
 def get_leaderboard():
-    """
-    Retrieve the top 20 scores from all users.
-
-    Returns:
-        Response: JSON response containing leaderboard data or error
-        - 200: List of top 20 scores with usernames
-        - 500: Internal server error
-    """
     try:
         cursor.execute("SELECT TOP 20 username, score FROM scores ORDER BY score DESC")
         top_scores = cursor.fetchall()
@@ -291,15 +211,6 @@ def get_leaderboard():
 
 @app.route("/health", methods=["GET"])
 def health_check():
-      """
-    Check the health status of the application.
-
-    Returns:
-        Response: JSON response indicating application health
-        - 200: Application is healthy
-        - 500: Application is unhealthy with error details
-    """
-
     try:
         return jsonify({"status": "UP"}), 200
     except Exception as e:
