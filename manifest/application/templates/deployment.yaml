@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.deployment.floopybird.namespace }}
+  name: {{ .Values.deployment.floopybird.name }}
+  labels:
+    app: {{ .Values.deployment.floopybird.name }}
+spec:
+  replicas: {{ .Values.deployment.floopybird.replicas }}
+  revisionHistoryLimit: {{ .Values.deployment.floopybird.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.floopybird.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.floopybird.name }}
+    spec:
+      {{- with .Values.deployment.floopybird.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - image: {{ .Values.deployment.floopybird.containers.image }}
+          imagePullPolicy: {{ .Values.deployment.floopybird.containers.imagePullPolicy }}
+          name: {{ .Values.deployment.floopybird.containers.name }}
+          ports:
+            - containerPort: {{ .Values.deployment.floopybird.containers.containerPort }}
+              protocol: {{ .Values.deployment.floopybird.containers.protocol }}
+          resources:
+            requests:
+              memory: "1Gi"
+          envFrom:
+            - secretRef:
+                name: {{ .Values.deployment.floopybird.name }}-mongodb-credentials
+      restartPolicy: {{ .Values.deployment.floopybird.containers.restartPolicy }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.service.floopybird.namespace }}
+  name: {{ .Values.service.floopybird.name }}
+  labels:
+    app: {{ .Values.service.floopybird.name }}
+spec:
+  type: {{ .Values.service.floopybird.type }}
+  selector:
+    app: {{ .Values.service.floopybird.name }}
+  ports:
+    - name: {{ .Values.service.floopybird.ports.name }}
+      port: {{ .Values.service.floopybird.ports.port }}
+      targetPort: {{ .Values.service.floopybird.ports.targetPort }}

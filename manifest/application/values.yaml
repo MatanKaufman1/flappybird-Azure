@@ -1,0 +1,65 @@
+deployment:
+  floopybird:
+    name: floopybird
+    namespace: floopyfloopy
+    replicas: 2
+    revisionHistoryLimit: 3
+    imagePullSecrets:
+      - name: nexus-pull-secret
+    containers:
+      image: nexus.hdo3.local/flappybird-production:c3d1ecd3011470be54c5a3e2a6983ab823217afc
+      imagePullPolicy: Always
+      name: floopybird-container
+      containerPort: 3000
+      protocol: TCP
+      restartPolicy: Always
+      envFrom:
+        - secretRef:
+            name: floopybird-mongodb-credentials
+service:
+  floopybird:
+    name: floopybird
+    namespace: floopyfloopy
+    type: NodePort
+    ports:
+      name: http
+      port: 3000
+      targetPort: 3000
+ingress:
+  name: floopy-ingress
+  namespace: floopyfloopy
+  className: nginx
+  hosts:
+    - host: app.hdo3.local
+      paths:
+        - path: /
+          pathType: Prefix
+mongodb:
+  nameOverride: "my-mongodb"
+  architecture: standalone
+  useStatefulSet: true
+  auth:
+    enabled: true
+    existingSecret: floopybird-mongodb-credentials
+    userKey: mongodb-root-user
+    passwordKey: mongodb-root-password
+  persistence:
+    enabled: true
+    storageClass: "local-storage"
+    size: 8Gi
+    local:
+      path: "/mnt/volumes/mongodb"
+      nodeName: "liraz-smol"
+  resourcesPreset: "small"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+  service:
+    type: ClusterIP
+    ports:
+      mongodb: 27017
+storage:
+  className: local-storage
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer

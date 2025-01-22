@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-game-deployment
+  labels:
+    app: flask-game
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask-game
+  template:
+    metadata:
+      labels:
+        app: flask-game
+    spec:
+      containers:
+      - name: flask-game
+        image: flappyacr123.azurecr.io/flask-game:latest
+        ports:
+        - containerPort: 3000
+
