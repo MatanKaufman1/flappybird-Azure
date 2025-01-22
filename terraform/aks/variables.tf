@@ -23,3 +23,8 @@ variable "vnet_subnet_id" {
   type        = string
 }
 
+variable "acr_id" {
+  description = "The ID of the Azure Container Registry."
+  type        = string
+}
+
