@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: flappy-app-service
+  namespace: test-infra
+spec:
+  selector:
+    app: flappy-app
+  ports:
+    - protocol: TCP
+      port: 8080         # Service port
+      targetPort: 3000   # Flask app's port
+

@@ -1,0 +1,21 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-1
+  namespace: alb-test-infra
+  annotations:
+    alb.networking.azure.io/alb-name: alb-test
+    alb.networking.azure.io/alb-namespace: alb-test-infra
+spec:
+  ingressClassName: azure-alb-external
+  rules:
+    - host: czgjf9c3gjbrdqcj.fz58.alb.azure.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: flappy-app-service  # This points to your ClusterIP service
+                port:
+                  number: 80  # The port on which the ClusterIP service is exposed
