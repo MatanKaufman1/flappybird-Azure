@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: flappy-app-deployment
 spec:
-  replicas: 1  # You can adjust the number of replicas as needed
+  replicas: 1
   selector:
     matchLabels:
       app: flappy-app
@@ -13,7 +13,16 @@ spec:
         app: flappy-app
     spec:
       containers:
-        - name: flappy-app
-          image: flappyacr777.azurecr.io/flask-app:latest  # Image from ACR
-          ports:
-            - containerPort: 3000  # Port exposed in the container
+      - name: flappy-app
+        image: flappyacr.azurecr.io/flask-app:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        readinessProbe:
+          httpGet:
+            path: /login              
+            port: 3000
+        livenessProbe:
+          httpGet:
+            path: /login             
+            port: 3000
