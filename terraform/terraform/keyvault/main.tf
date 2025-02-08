@@ -1,14 +1,9 @@
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
-  location = var.location
-}
-
 resource "azurerm_key_vault" "kv" {	
   name                = var.key_vault_name
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
   sku_name            = "standard"
   tenant_id           = data.azurerm_client_config.current.tenant_id
 
@@ -20,5 +15,18 @@ resource "azurerm_key_vault" "kv" {
     secret_permissions = [
       "Get", "Set", "List", "Delete"
     ]
+  }
+
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = var.aks_managed_identity_object_id
+
+    secret_permissions = [
+      "Get"  // Grant AKS the 'Get' permission for secrets
+    ]
+  }
+
+  provisioner "local-exec" {
+    command = "bash ${path.module}/keyvault_values.sh ${azurerm_key_vault.kv.name}"
   }
 }

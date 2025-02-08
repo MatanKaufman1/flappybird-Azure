@@ -29,3 +29,4 @@ variable "key_vault_name" {
   description = "this is azure_key_vault"
   type        = string
 }
+

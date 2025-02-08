@@ -43,3 +43,20 @@ resource "azurerm_mssql_database" "sql_database" {
   sku_name       = "S0"
 }
 
+resource "azurerm_mssql_virtual_network_rule" "aks_vnet_rule" {
+  name                     = "aks-vnet-rule"
+  server_id                = azurerm_mssql_server.sql_server.id
+  subnet_id = var.vnet_subnet_id  
+}
+
+/*
+resource "azurerm_mssql_firewall_rule" "aks_subnet_firewall" {
+  name                = "allow-aks-subnet"
+  server_id           = azurerm_mssql_server.sql_server.id
+  
+  # Use the passed subnet address prefix from the network module
+  start_ip_address    = "0.0.0.0"
+  end_ip_address      = "0.0.0.0"
+}
+*/
+
