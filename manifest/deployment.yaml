@@ -14,15 +14,19 @@ spec:
     spec:
       containers:
       - name: flappy-app
-        image: flappyacr.azurecr.io/flask-app:latest
+        image: flappyacr27.azurecr.io/flask-app:latest
         ports:
         - containerPort: 3000
           name: http
         readinessProbe:
           httpGet:
-            path: /login              
+            path: /login
             port: 3000
         livenessProbe:
           httpGet:
-            path: /login             
+            path: /login
             port: 3000
+        env:
+        - name: KEY_VAULT_NAME
+          value: "hdo3keyvault"  # Replace with your actual Key Vault name
+
