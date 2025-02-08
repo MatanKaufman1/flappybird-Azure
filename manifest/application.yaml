@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://sharon088@dev.azure.com/sharon088/FlappyBird/_git/FlappyManifests
+    repoURL: REPO_URL
     targetRevision: HEAD
     path: .
   destination:
