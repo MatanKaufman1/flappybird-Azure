@@ -1127,15 +1127,17 @@ alertmanager:
 ## Using default values from https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 ##
 grafana:
-  enabled: true
-  namespaceOverride: ""
-  env:
-    GF_SERVER_SERVE_FROM_SUB_PATH: true
-  grafana.ini:
-    server:
-      domain: <doman.com>
-      root_url: <domain.com>/grafana/
-      serve_from_sub_path: true
+  enable: true
+  namespace: 'monitoring'
+grafana.ini:
+  server:
+    protocol: "http"
+    domain: "fah0dcdrg2c5cjfj.fz91.alb.azure.com"
+    root_url: "%(protocol)s://%(domain)s/grafana/"
+    serve_from_sub_path: true
+
+
+
 
   ## ForceDeployDatasources Create datasource configmap even if grafana deployment has been disabled
   ##
@@ -1205,16 +1207,16 @@ grafana:
     #   - grafana.example.com
 
   # # To make Grafana persistent (Using Statefulset)
-  # #
-  # persistence:
-  #   enabled: true
-  #   type: sts
-  #   storageClassName: "storageClassName"
-  #   accessModes:
-  #     - ReadWriteOnce
-  #   size: 20Gi
-  #   finalizers:
-  #     - kubernetes.io/pvc-protection
+
+  persistence:
+     enabled: false
+     type: sts
+     storageClassName: "managed-csi"
+     accessModes:
+       - ReadWriteOnce
+     size: 10Gi
+     finalizers:
+       - kubernetes.io/pvc-protection
 
   serviceAccount:
     create: true
@@ -2495,16 +2497,16 @@ prometheusOperator:
   livenessProbe:
     enabled: true
     failureThreshold: 3
-    initialDelaySeconds: 60
+    initialDelaySeconds: 0
     periodSeconds: 10
     successThreshold: 1
-    timeoutSeconds: 5
+    timeoutSeconds: 1
   ## Readiness probe for the prometheusOperator deployment
   ##
   readinessProbe:
     enabled: true
-    failureThreshold: 3
-    initialDelaySeconds: 60
+    failureThreshold: 5
+    initialDelaySeconds: 10
     periodSeconds: 10
     successThreshold: 1
     timeoutSeconds: 5
@@ -2670,17 +2672,17 @@ prometheusOperator:
       livenessProbe:
         enabled: true
         failureThreshold: 3
-        initialDelaySeconds: 60
+        initialDelaySeconds: 30
         periodSeconds: 10
         successThreshold: 1
-        timeoutSeconds: 5
+        timeoutSeconds: 1
 
       ## Readiness probe
       ##
       readinessProbe:
         enabled: true
-        failureThreshold: 3
-        initialDelaySeconds: 60
+        failureThreshold: 5
+        initialDelaySeconds: 20
         periodSeconds: 10
         successThreshold: 1
         timeoutSeconds: 5

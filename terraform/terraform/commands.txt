@@ -1,13 +1,14 @@
-terraform init 
-terraform apply -target=module.keyvault
+to create resources :
+
+sudo bash ./backend.sh
 
 export ARM_SUBSCRIPTION_ID="your-subscription-id"
 
-
-az keyvault secret set --vault-name "hdo3keyvault20" --name "AZURE-SQL-USERNAME" --value "adminuser"
-az keyvault secret set --vault-name "hdo3keyvault20" --name "AZURE-SQL-PASSWORD" --value "your-secure-password"
-
-az keyvault secret set --vault-name "hdo3keyvault20" --name "AZURE-SQL-SERVER" --value "azmysql"
-az keyvault secret set --vault-name "hdo3keyvault20" --name "AZURE-SQL-DATABASE" --value "azmydb"
+terraform init
 
 terraform apply
+
+for deleteion :
+
+az group delete --name terraform-backend-rg --yes
+terraform destroy

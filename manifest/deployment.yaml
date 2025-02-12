@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: flappy-app
-        image: IMAGE_NAME:IMAGE_VERSION
+        image: flappyacr27.azurecr.io/flask-app:latest
         ports:
         - containerPort: 3000
           name: http
@@ -28,5 +28,5 @@ spec:
             port: 3000
         env:
         - name: KEY_VAULT_NAME
-          value: AZURE_KEYVAULT  
+          value: "hdo3keyvault"  # Replace with your actual Key Vault name
 

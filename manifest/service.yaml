@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: flappy-app-service
   annotations:
+    #alb.networking.azure.io/health-probe-port: "3000"
+    #alb.networking.azure.io/health-probe-path: "/login"
 spec:
   selector:
     app: flappy-app

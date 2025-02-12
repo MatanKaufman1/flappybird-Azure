@@ -30,7 +30,6 @@ app.config["SECRET_KEY"] = "your-secret-key"
 CORS(app)
 
 keyVaultName = os.getenv("KEY_VAULT_NAME")
-
 KVUri = f"https://{keyVaultName}.vault.azure.net"
 
 # Authenticate and create a client for Key Vault

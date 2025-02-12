@@ -8,7 +8,12 @@ spec:
   source:
     repoURL: https://sharon088@dev.azure.com/sharon088/FlappyBird/_git/FlappyManifests
     targetRevision: HEAD
-    path: .
+    path: /
+#    plugin:
+#      name: argocd-vault-plugin-helm
+#      env:
+#        - name: helm_args
+#          value: "-f values.yaml"
   destination:
     server: https://kubernetes.default.svc
     namespace: default

@@ -35,6 +35,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     ACCEPT_EULA=Y \
     PATH="/opt/venv/bin:$PATH"
 
+# Set the KEY_VAULT_NAME environment variable for runtime (so app.py can access it)
+ENV KEY_VAULT_NAME=${KEY_VAULT_NAME} 
+
 # Install runtime dependencies and ODBC driver
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential \
@@ -44,12 +47,9 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --upgrade pip
 
-RUN apt-get update
 RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 RUN curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list
 
-
-RUN exit
 RUN apt-get update
 RUN env ACCEPT_EULA=Y apt-get install -y msodbcsql18
 

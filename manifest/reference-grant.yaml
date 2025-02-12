@@ -1,7 +1,7 @@
 #apiVersion: gateway.networking.k8s.io/v1beta1
 #kind: ReferenceGrant
 #metadata:
-#  name: allow-monitoring-route
+#  name: allow-argocd-route
 #  namespace: argocd # ✅ Grant access from `default` to `argocd`
 #spec:
 #  from:
@@ -18,7 +18,7 @@
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
-  name: allow-monitoring-route-grafana
+  name: allow-monitoring-route
   namespace: monitoring # ✅ Grant access from `default` to `monitoring`
 spec:
   from:
@@ -28,4 +28,4 @@ spec:
   to:
   - group: ""  # ✅ Allow access to core resources like Services
     kind: Service
-    name: prometheus-grafana    # ✅ Allow only this service
+    name: prom-grafana
