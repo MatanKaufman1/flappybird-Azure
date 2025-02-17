@@ -853,6 +853,7 @@ dashboardsConfigMaps: {}
 ## NOTE: values in map will be converted to ini format
 ## ref: http://docs.grafana.org/installation/configuration/
 ##
+
 grafana.ini:
   paths:
     data: /var/lib/grafana/
@@ -866,11 +867,13 @@ grafana.ini:
   grafana_net:
     url: https://grafana.net
   server:
-    domain: "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (.Values.ingress.hosts | first) . }}{{ else }}''{{ end }}"
+    domain:  "{{ if (and .Values.ingress.enabled .Values.ingress.hosts) }}{{ tpl (index .Values.ingress.hosts 0) . }}{{ else }}'default.example.com'{{ end }}"
+    root_url: "%(protocol)s://%(domain)s/grafana/"
+    serve_from_sub_path: true
 ## grafana Authentication can be enabled with the following values on grafana.ini
- # server:
+  #server:
       # The full public facing url you use in browser, used for redirects and emails
- #    root_url:
+#     root_url:
  # https://grafana.com/docs/grafana/latest/auth/github/#enable-github-in-grafana
  # auth.github:
  #    enabled: false

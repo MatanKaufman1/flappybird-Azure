@@ -1127,15 +1127,9 @@ alertmanager:
 ## Using default values from https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
 ##
 grafana:
-  enable: true
-  namespace: 'monitoring'
+  enabled: true
+  namespaceOverride: ""
 grafana.ini:
-  server:
-    protocol: "http"
-    domain: "fah0dcdrg2c5cjfj.fz91.alb.azure.com"
-    root_url: "%(protocol)s://%(domain)s/grafana/"
-    serve_from_sub_path: true
-
 
 
 
@@ -1207,16 +1201,16 @@ grafana.ini:
     #   - grafana.example.com
 
   # # To make Grafana persistent (Using Statefulset)
-
-  persistence:
-     enabled: false
-     type: sts
-     storageClassName: "managed-csi"
-     accessModes:
-       - ReadWriteOnce
-     size: 10Gi
-     finalizers:
-       - kubernetes.io/pvc-protection
+  # #
+  # persistence:
+  #   enabled: true
+  #   type: sts
+  #   storageClassName: "storageClassName"
+  #   accessModes:
+  #     - ReadWriteOnce
+  #   size: 20Gi
+  #   finalizers:
+  #     - kubernetes.io/pvc-protection
 
   serviceAccount:
     create: true
@@ -2505,11 +2499,11 @@ prometheusOperator:
   ##
   readinessProbe:
     enabled: true
-    failureThreshold: 5
-    initialDelaySeconds: 10
+    failureThreshold: 3
+    initialDelaySeconds: 0
     periodSeconds: 10
     successThreshold: 1
-    timeoutSeconds: 5
+    timeoutSeconds: 1
 
   ## Admission webhook support for PrometheusRules resources added in Prometheus Operator 0.30 can be enabled to prevent incorrectly formatted
   ## rules from making their way into prometheus and potentially preventing the container from starting
@@ -2681,11 +2675,11 @@ prometheusOperator:
       ##
       readinessProbe:
         enabled: true
-        failureThreshold: 5
-        initialDelaySeconds: 20
+        failureThreshold: 3
+        initialDelaySeconds: 5
         periodSeconds: 10
         successThreshold: 1
-        timeoutSeconds: 5
+        timeoutSeconds: 1
 
       ## Resource limits & requests
       ##
@@ -3172,7 +3166,7 @@ prometheusOperator:
       sha: ""
 
     # add prometheus config reloader liveness and readiness probe. Default: false
-    enableProbe: true
+    enableProbe: false
 
     # resource config for prometheusConfigReloader
     resources: {}

@@ -24,17 +24,6 @@ spec:
         - path:
             type: PathPrefix
             value: /grafana
-      filters:
-      - type: RequestRedirect
-        requestRedirect:
-          path:
-            type: ReplaceFullPath
-            replaceFullPath: /login
-          statusCode: 302
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /login
       backendRefs:
         - name: prom-grafana
           kind: Service

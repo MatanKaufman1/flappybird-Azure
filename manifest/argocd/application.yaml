@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://sharon088@dev.azure.com/sharon088/FlappyBird/_git/FlappyManifests
+    repoURL: REPO-URL
     targetRevision: HEAD
-    path: .
+    path: flappyapp/
   destination:
     server: https://kubernetes.default.svc
     namespace: default
