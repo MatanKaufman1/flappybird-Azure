@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: flappy-app
-        image: flappyacr35.azurecr.io/flask-app:latest
+        image: "${ACR_NAME}.azurecr.io/${APP_NAME}:${VERSION}"
         ports:
         - containerPort: 3000
           name: http

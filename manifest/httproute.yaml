@@ -9,7 +9,7 @@ spec:
     kind: Gateway
     namespace: default 
   hostnames:
-  - "fah0dcdrg2c5cjfj.fz91.alb.azure.com"
+  - "<DOMAIN-NAME>"
   rules:
     - matches:
         - path:
