@@ -84,3 +84,103 @@ stages:
             tags: |
               latest
               $(Build.SourceVersion)  
+
+
+- stage: TestContainer
+  displayName: 'Run Container & Perform Health Check'
+  dependsOn: BuildDockerImage  
+  jobs:
+    - job: RunAndCheckHealth
+      displayName: 'Run Docker Container and Test Health'
+      steps:
+        - task: Bash@3
+          displayName: 'Run Container'
+          inputs:
+            targetType: 'inline'
+            script: |
+              docker run -d --name test_container -p 3000:3000 $(containerRegistry)/$(repository):latest
+              sleep 10  # Give it time to start
+
+        - task: Bash@3
+          displayName: 'Health Check'
+          inputs:
+            targetType: 'inline'
+            script: |
+              STATUS=$(docker exec test_container wget -qO- http://localhost:3000/health --server-response 2>&1 | awk '/HTTP/{print $2}')              if [ "$STATUS" -ne 200 ]; then
+                echo "Health check failed! HTTP Status: $STATUS"
+                docker logs test_container
+                exit 1
+              else
+                echo "Health check passed!"
+              fi
+
+        - task: Bash@3
+          displayName: 'Stop and Remove Container'
+          condition: always()
+          inputs:
+            targetType: 'inline'
+            script: |
+              docker stop test_container && docker rm test_container
+
+- stage: PromoteToProduction
+  displayName: 'Promote Docker Image to Production'
+  dependsOn: BuildDockerImage
+  condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+  jobs:
+    - job: PromoteImage
+      displayName: 'Tag and Push Production Image'
+      steps:
+        - script: |
+            GIT_COMMIT=$(git rev-parse HEAD)
+            az acr login --name $(containerRegistry)
+
+            # Pull the dev image
+            docker pull $(containerRegistry)/$(repository)-dev:latest
+
+            # Tag it as production
+            docker tag $(containerRegistry)/$(repository)-dev:latest $(containerRegistry)/$(repository)-prod:latest
+            docker tag $(containerRegistry)/$(repository)-dev:latest $(containerRegistry)/$(repository)-prod:$(GIT_COMMIT)
+
+            # Push to Azure Container Registry
+            docker push $(containerRegistry)/$(repository)-prod:latest
+            docker push $(containerRegistry)/$(repository)-prod:$(GIT_COMMIT)
+          displayName: 'Promote and Push Docker Image'
+
+
+
+- stage: PostDeploymentSlackNotification
+  displayName: 'Post Deployment Notification'
+  dependsOn: PromoteToProduction
+  jobs:
+    - job: SendSlackNotificationSuccess
+      displayName: 'Send Success Notification to Slack'
+      condition: succeeded()  
+      steps:
+        - task: SlackNotification@1
+          displayName: 'Notify Slack Successful Deployment'
+          inputs:
+            slackConnection: 'flappyslack'  
+            channel: '#flappy-deployment'  
+            text: |
+              🚀 *Deployment Successful!* 
+              The FlappyBird app has been promoted to production and deployed successfully.
+
+              Commit: $(Build.SourceVersion)
+              Docker Image: $(containerRegistry)/$(repository)-prod:latest
+
+    - job: SendSlackNotificationFailure
+      displayName: 'Send Failure Notification to Slack'
+      condition: failed()  
+      steps:
+        - task: SlackNotification@1
+          displayName: 'Notify Slack Failure Deployment'
+          inputs:
+            slackConnection: 'flappyslack'  
+            channel: '#flappy-deployment'  
+            text: |
+              ⚠️ *Deployment Failed!* 
+              The FlappyBird app promotion to production has failed.
+
+              Commit: $(Build.SourceVersion)
+              Docker Image: $(containerRegistry)/$(repository)-prod:latest
+
