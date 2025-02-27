@@ -99,7 +99,7 @@ stages:
             targetType: 'inline'
             script: |
               docker run -d --name test_container -p 3000:3000 $(containerRegistry)/$(repository):latest
-              sleep 10  # Give it time to start
+              sleep 10  
 
         - task: Bash@3
           displayName: 'Health Check'
