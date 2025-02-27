@@ -99,7 +99,7 @@ stages:
             targetType: 'inline'
             script: |
               docker run -d --name test_container -p 3000:3000 $(containerRegistry)/$(repository):latest
-              sleep 10  
+              sleep 10  # Give it time to start
 
         - task: Bash@3
           displayName: 'Health Check'
@@ -121,6 +121,23 @@ stages:
             targetType: 'inline'
             script: |
               docker stop test_container && docker rm test_container
+
+- stage: PushDockerImage
+  displayName: 'Push Docker Image'
+  dependsOn: TestContainer  
+  jobs:
+    - job: PushDocker
+      displayName: 'Push Docker Image to Registry'
+      steps:
+        - task: Docker@2
+          displayName: 'Push Docker Image'
+          inputs:
+            command: 'push'
+            containerRegistry: $(containerRegistry)
+            repository: $(repository)
+            tags: |
+              latest
+              $(Build.SourceVersion)
 
 - stage: PromoteToProduction
   displayName: 'Promote Docker Image to Production'
